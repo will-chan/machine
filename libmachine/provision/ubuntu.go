@@ -145,8 +145,7 @@ func (provisioner *UbuntuProvisioner) Hostname() (string, error) {
 
 func (provisioner *UbuntuProvisioner) SetHostname(hostname string) error {
 	cmd, err := provisioner.SSHCommand(fmt.Sprintf(
-		"sudo hostname %s && echo %q | sudo tee /etc/hostname && echo \"127.0.0.1 %s\" | sudo tee -a /etc/hosts",
-		hostname,
+		"sudo hostname %s && echo %q | sudo tee /etc/hostname",
 		hostname,
 		hostname,
 	))
@@ -155,7 +154,25 @@ func (provisioner *UbuntuProvisioner) SetHostname(hostname string) error {
 		return err
 	}
 
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	// ubuntu/debian use 127.0.1.1 for non "localhost" loopback hostnames: https://www.debian.org/doc/manuals/debian-reference/ch05.en.html#_the_hostname_resolution
+	cmd, err = provisioner.SSHCommand(fmt.Sprintf(
+		"sudo sed -i 's/^127.0.1.1.*/127.0.1.1 %s/g' /etc/hosts",
+		hostname,
+	))
+
+	if err != nil {
+		return err
+	}
+
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (provisioner *UbuntuProvisioner) GetDockerOptionsDir() string {
