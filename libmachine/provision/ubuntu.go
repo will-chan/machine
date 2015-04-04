@@ -123,8 +123,9 @@ func (provisioner *UbuntuProvisioner) Hostname() (string, error) {
 }
 
 func (provisioner *UbuntuProvisioner) SetHostname(hostname string) error {
+	// ubuntu/debian use 127.0.1.1 for non "localhost" loopback hostnames: https://www.debian.org/doc/manuals/debian-reference/ch05.en.html#_the_hostname_resolution
 	cmd, err := provisioner.SSHCommand(fmt.Sprintf(
-		"sudo hostname %s && echo %q | sudo tee /etc/hostname && echo \"127.0.0.1 %s\" | sudo tee -a /etc/hosts",
+		"sudo hostname %s && echo %q | sudo tee /etc/hostname && sudo sed -i 's/^127.0.1.1.*/127.0.1.1 %s/g' /etc/hosts",
 		hostname,
 		hostname,
 		hostname,
