@@ -650,11 +650,11 @@ func cmdRm(c *cli.Context) {
 			log.Errorf("Error removing machine %s: %s", host, err)
 			isError = true
 		}
+		log.Printf("The machine '%s' was successfully removed.", host)
 	}
 	if isError {
 		log.Fatal("There was an error removing a machine. To force remove it, pass the -f option. Warning: this might leave it running on the provider.")
 	}
-	log.Print("The machine was successfully removed.")
 }
 
 func cmdEnv(c *cli.Context) {
